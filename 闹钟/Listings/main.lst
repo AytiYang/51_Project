@@ -1,0 +1,256 @@
+C51 COMPILER V9.54   MAIN                                                                  10/21/2023 18:36:29 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\Keil\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main.ls
+                    -t) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "LCD1602.h"
+   3          #include "DS1302.h"
+   4          #include "Delay.h"
+   5          #include "Key.h"
+   6          #include "Timer0.h"
+   7          #include "Buzzer.h"
+   8          
+   9          char KeyNumber,MODE,TimeSetSelect,TimeSetFlashFlag;
+  10          unsigned MonthMaxDays[] = {31,29,31,30,31,30,31,31,30,31,30,31}; 
+  11          char Alarm_Time[] = {00,00,00};
+  12          unsigned char RingFlag = 1;
+  13          void TimeShow(void)
+  14          {
+  15   1              DS1302_ReadTime();
+  16   1              LCD_ShowNum(1,1,DS1302_Time[0],2);
+  17   1              LCD_ShowNum(1,4,DS1302_Time[1],2);
+  18   1              LCD_ShowNum(1,7,DS1302_Time[2],2);
+  19   1              LCD_ShowNum(2,1,DS1302_Time[3],2);
+  20   1              LCD_ShowNum(2,4,DS1302_Time[4],2);
+  21   1              LCD_ShowNum(2,7,DS1302_Time[5],2);
+  22   1              //LCD_ShowString(2,10,"Day");
+  23   1              //LCD_ShowNum(2,13,DS1302_Time[6],1);
+  24   1              //LCD_ShowNum(2,13,TimeSetFlashFlag,2);
+  25   1      }
+  26          
+  27          
+  28          void AlarmSet(void)
+  29          {
+  30   1              //LCD_ShowNum(1,12,TimeSetSelect,2);
+  31   1              if(TimeSetSelect == 0 && TimeSetFlashFlag == 1){LCD_ShowString(2,9,"  ");}
+  32   1              else{LCD_ShowNum(2,9,Alarm_Time[0],2);}
+  33   1              if(TimeSetSelect == 1 && TimeSetFlashFlag == 1){LCD_ShowString(2,12,"  ");}
+  34   1              else{LCD_ShowNum(2,12,Alarm_Time[1],2);}
+  35   1              if(TimeSetSelect == 2 && TimeSetFlashFlag == 1){LCD_ShowString(2,15,"  ");}
+  36   1              else{LCD_ShowNum(2,15,Alarm_Time[2],2);}
+  37   1              if(KeyNumber==2)
+  38   1              {
+  39   2                      TimeSetSelect++;
+  40   2                      TimeSetSelect%=3;
+  41   2              }
+  42   1              if(KeyNumber==3)
+  43   1              {
+  44   2                      Alarm_Time[TimeSetSelect]++;
+  45   2                      if(Alarm_Time[0]>23){Alarm_Time[0]=0;}
+  46   2                      if(Alarm_Time[1]>59){Alarm_Time[1]=0;}
+  47   2                      if(Alarm_Time[2]>59){Alarm_Time[2]=0;}
+  48   2              }
+  49   1              if(KeyNumber==4)
+  50   1              {
+  51   2                      Alarm_Time[TimeSetSelect]--;
+  52   2                      if(Alarm_Time[0]<0){Alarm_Time[0]=23;}
+  53   2                      if(Alarm_Time[1]<0){Alarm_Time[1]=59;}
+  54   2                      if(Alarm_Time[2]<0){Alarm_Time[2]=59;}
+C51 COMPILER V9.54   MAIN                                                                  10/21/2023 18:36:29 PAGE 2   
+
+  55   2              }
+  56   1      
+  57   1      }
+  58          
+  59                  //设置完后更新显示
+  60          
+  61          void TimeSet(void)
+  62          {
+  63   1              //LCD_ShowNum(1,12,TimeSetSelect,2);
+  64   1              if(TimeSetSelect == 0 && TimeSetFlashFlag == 1){LCD_ShowString(1,1,"  ");}
+  65   1              else{LCD_ShowNum(1,1,DS1302_Time[0],2);}
+  66   1              if(TimeSetSelect == 1 && TimeSetFlashFlag == 1){LCD_ShowString(1,4,"  ");}
+  67   1              else{LCD_ShowNum(1,4,DS1302_Time[1],2);}
+  68   1              if(TimeSetSelect == 2 && TimeSetFlashFlag == 1){LCD_ShowString(1,7,"  ");}
+  69   1              else{LCD_ShowNum(1,7,DS1302_Time[2],2);}
+  70   1              if(TimeSetSelect == 3 && TimeSetFlashFlag == 1){LCD_ShowString(2,1,"  ");}
+  71   1              else{LCD_ShowNum(2,1,DS1302_Time[3],2);}
+  72   1              if(TimeSetSelect == 4 && TimeSetFlashFlag == 1){LCD_ShowString(2,4,"  ");}
+  73   1              else{LCD_ShowNum(2,4,DS1302_Time[4],2);}
+  74   1              if(TimeSetSelect == 5 && TimeSetFlashFlag == 1){LCD_ShowString(2,7,"  ");}
+  75   1              else{LCD_ShowNum(2,7,DS1302_Time[5],2);}
+  76   1              
+  77   1              
+  78   1              
+  79   1              
+  80   1              
+  81   1              if(KeyNumber==2)
+  82   1              {
+  83   2                      TimeSetSelect++;
+  84   2                      TimeSetSelect%=6;
+  85   2              }
+  86   1              if(KeyNumber==3)
+  87   1              {
+  88   2                      DS1302_Time[TimeSetSelect]++;
+  89   2                      if(DS1302_Time[0]>99){DS1302_Time[0] =0;}
+  90   2                      if(DS1302_Time[1]>12){DS1302_Time[1] =1;}
+  91   2                      
+  92   2                      if(DS1302_Time[0]%100==0||DS1302_Time[0]%4==0)  //判断闰年
+  93   2                      {
+  94   3                              if(DS1302_Time[1]==2)
+  95   3                              {
+  96   4                                      if(DS1302_Time[2]>29){DS1302_Time[2]=1;}
+  97   4                              }
+  98   3                              else
+  99   3                              {
+ 100   4                                      if(DS1302_Time[2]>MonthMaxDays[DS1302_Time[1]-1]){DS1302_Time[2] = 1;}
+ 101   4                              }
+ 102   3                      }
+ 103   2                      else
+ 104   2                      {
+ 105   3                              if(DS1302_Time[1]==2)
+ 106   3                              {
+ 107   4                                      if(DS1302_Time[2]>28){DS1302_Time[2]=1;}
+ 108   4                              }
+ 109   3                              else
+ 110   3                              {
+ 111   4                                      if(DS1302_Time[2]>MonthMaxDays[DS1302_Time[1]-1]){DS1302_Time[2] = 1;}
+ 112   4                              }
+ 113   3                      }
+ 114   2                      if(DS1302_Time[3]>23){DS1302_Time[3]=0;}
+ 115   2                      if(DS1302_Time[4]>59){DS1302_Time[4]=0;}
+ 116   2                      if(DS1302_Time[5]>59){DS1302_Time[5]=0;}
+C51 COMPILER V9.54   MAIN                                                                  10/21/2023 18:36:29 PAGE 3   
+
+ 117   2              }
+ 118   1              if(KeyNumber==4)
+ 119   1              {
+ 120   2                      DS1302_Time[TimeSetSelect]--;
+ 121   2                      if(DS1302_Time[0]<0){DS1302_Time[0] =99;}
+ 122   2                      if(DS1302_Time[1]<1){DS1302_Time[1] =12;}
+ 123   2                      
+ 124   2                      if(DS1302_Time[0]%100==0||DS1302_Time[0]%4==0)  //判断闰年
+ 125   2                      {
+ 126   3                              if(DS1302_Time[1]==2)
+ 127   3                              {
+ 128   4                                      if(DS1302_Time[2]<1){DS1302_Time[2]=29;}        //过小判断
+ 129   4                                      if(DS1302_Time[2]>29){DS1302_Time[2]=29;}       //过大判断
+ 130   4                              }
+ 131   3                              else
+ 132   3                              {
+ 133   4                                      if(DS1302_Time[2]<1){DS1302_Time[2] = MonthMaxDays[DS1302_Time[1]-1];}
+ 134   4                                      if(DS1302_Time[2]>MonthMaxDays[DS1302_Time[1]-1]){DS1302_Time[2] = MonthMaxDays[DS1302_Time[1]-1];}
+ 135   4                              }
+ 136   3                      }
+ 137   2                      else
+ 138   2                      {
+ 139   3                              if(DS1302_Time[1]==2)
+ 140   3                              {
+ 141   4                                      if(DS1302_Time[2]<1){DS1302_Time[2]=28;}
+ 142   4                                      if(DS1302_Time[2]>28){DS1302_Time[2]=28;}
+ 143   4                              }
+ 144   3                              else
+ 145   3                              {
+ 146   4                                      if(DS1302_Time[2]<1){DS1302_Time[2] = MonthMaxDays[DS1302_Time[1]-1];}
+ 147   4                                      if(DS1302_Time[2]>MonthMaxDays[DS1302_Time[1]-1]){DS1302_Time[2] = MonthMaxDays[DS1302_Time[1]-1];}
+ 148   4                              }
+ 149   3                      }
+ 150   2                      if(DS1302_Time[3]<0){DS1302_Time[3]=23;}
+ 151   2                      if(DS1302_Time[4]<0){DS1302_Time[4]=59;}
+ 152   2                      if(DS1302_Time[5]<0){DS1302_Time[5]=59;}
+ 153   2              }
+ 154   1              //设置完后更新显示
+ 155   1      }
+ 156          void Alarm_ShowTime(void)
+ 157          {
+ 158   1              LCD_ShowNum(2,9,Alarm_Time[0],2);
+ 159   1              LCD_ShowNum(2,12,Alarm_Time[1],2);
+ 160   1              LCD_ShowNum(2,15,Alarm_Time[2],2);
+ 161   1      }
+ 162          
+ 163          void Alarm_Ring_Check(void)
+ 164          {
+ 165   1              if(RingFlag==1)
+ 166   1              {
+ 167   2                      if(DS1302_Time[3]==Alarm_Time[0] && DS1302_Time[4]==Alarm_Time[1] && DS1302_Time[5]==Alarm_Time[2])
+ 168   2                      {
+ 169   3                              unsigned char i;
+ 170   3                              for(i=0;i<5;i++)
+ 171   3                              {
+ 172   4                                      Buzzer_Time(1000);
+ 173   4                                      TimeShow();
+ 174   4                              }
+ 175   3                      }
+ 176   2              }
+ 177   1      }
+ 178          
+C51 COMPILER V9.54   MAIN                                                                  10/21/2023 18:36:29 PAGE 4   
+
+ 179          void main()
+ 180          {
+ 181   1              LCD_Init();
+ 182   1              DS1302_Init();
+ 183   1              DS1302_SetTime();
+ 184   1              LCD_ShowString(1,3,"-");
+ 185   1              LCD_ShowString(1,6,"-");
+ 186   1              LCD_ShowString(2,3,":");
+ 187   1              LCD_ShowString(2,6,":");
+ 188   1              LCD_ShowString(2,11,":");
+ 189   1              LCD_ShowString(2,14,":");
+ 190   1              LCD_ShowString(1,11,"Alarm");
+ 191   1              Timer0_Init();
+ 192   1              while(1)
+ 193   1              {
+ 194   2                      Alarm_Ring_Check();
+ 195   2                      KeyNumber =Key();
+ 196   2                      if(KeyNumber==1)
+ 197   2                      {
+ 198   3                              if(MODE==0){MODE = 1;RingFlag=0;}
+ 199   3                              else if(MODE==1){MODE = 2;DS1302_SetTime();TimeSetSelect=0;}
+ 200   3                              else if(MODE==2){MODE = 0;TimeSetSelect=0;RingFlag = 1;}
+ 201   3                      }
+ 202   2                      switch(MODE)
+ 203   2                      {
+ 204   3                              case 0:TimeShow();Alarm_ShowTime();break;
+ 205   3                              case 1:TimeSet();break;
+ 206   3                              case 2:TimeShow();AlarmSet();break;
+ 207   3                      }
+ 208   2                      
+ 209   2              }
+ 210   1      }
+ 211          
+ 212          void Timer0_Routine() interrupt 1
+ 213          {
+ 214   1              static unsigned int T0Count;//中断函数结束后,这个变量依然会存活
+ 215   1              //与全局变量的区别是,static后的只能该函数自己用
+ 216   1              TL0 = 0x18;                             //设置定时初始值
+ 217   1              TH0 = 0xFC;                             //设置定时初始值
+ 218   1              T0Count++;
+ 219   1              if(T0Count>=500)
+ 220   1              {
+ 221   2                      T0Count=0;
+ 222   2                      TimeSetFlashFlag = !TimeSetFlashFlag;
+ 223   2      
+ 224   2              }
+ 225   1              
+ 226   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1409    ----
+   CONSTANT SIZE    =     13    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     34       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
